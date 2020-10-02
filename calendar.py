@@ -1,17 +1,18 @@
 from datetime import date, datetime
-from tkinter import *
+from tkinter import Tk, Button, Label, Frame
 
 class Calendar():
     
     def __init__(self):
         l_mouth = range(1,32)
         s_mouth = range(1,31)
-        self.calendar ={'1':('Styczeń',l_mouth), '2':('Luty',range(1,29)), '3':('Marzec',l_mouth), '4':('Kwiecień',s_mouth), '5':('Maj',l_mouth), 
+        self.calendar ={'1':('Styczeń',l_mouth), '2':('Luty',range(1,30)), '3':('Marzec',l_mouth), '4':('Kwiecień',s_mouth), '5':('Maj',l_mouth), 
                         '6':('Czerwiec',s_mouth), '7':('Lipiec',l_mouth), '8':('Sierpień',l_mouth), '9':('Wrzesień',s_mouth), '10':('Pażdziernik',l_mouth),
                         '11':('Listopad',s_mouth), '12':('Grudzień',l_mouth)}
         self.week = ('Pon', 'Wt', 'Śr', 'Czw', 'Pi', 'Sob', 'Niedz')
 
         self.window = Tk()
+        self.window.title("Calendar")
         self.dt = date.today()
         self.months = self.calendar[str(self.dt.month)]
         self.month_n = self.dt.month
@@ -67,15 +68,26 @@ class Calendar():
             today = "#a4ff48"
         else:
             today = None
+        if self.month_n == 1:
+            days = 31
+        else:
+            days = ((self.calendar[str(self.month_n-1)])[1])[-1]
+        if (c > 0):
+            for n in range(c,0,-1):
+                month_e = Label(self.m_day_frame, text=days-n+1, width=15, height=5, justify='center')
+                month_e.grid(row=r, column=c-n)
         for m_day in self.months[1]:
-
             month_e = Button(self.m_day_frame, text=m_day, command=self.add_event, width=15, height=5, justify='center', bg=(today if m_day == self.dt.day else None ))
             month_e.grid(row=r, column=c)
             c += 1
             if(c == 7):
                 r+=1
                 c=0
-    
+        if (c < 7 and c != 0):
+            for n in range(c,7,1):
+                month_e = Label(self.m_day_frame, text=n-c+1, width=15, height=5, justify='center')
+                month_e.grid(row=r, column=n)
+
     def get_first_day(self):
         return self.dt.replace(self.yr, month=self.month_n, day=1).weekday()
     
