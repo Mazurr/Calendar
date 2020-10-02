@@ -6,13 +6,16 @@ class Calendar():
     def __init__(self):
         l_mouth = range(1,32)
         s_mouth = range(1,31)
-        self.calendar ={'1':('Styczeń',l_mouth), '2':('Luty',range(1,30)), '3':('Marzec',l_mouth), '4':('Kwiecień',s_mouth), '5':('Maj',l_mouth), 
-                        '6':('Czerwiec',s_mouth), '7':('Lipiec',l_mouth), '8':('Sierpień',l_mouth), '9':('Wrzesień',s_mouth), '10':('Pażdziernik',l_mouth),
-                        '11':('Listopad',s_mouth), '12':('Grudzień',l_mouth)}
-        self.week = ('Pon', 'Wt', 'Śr', 'Czw', 'Pi', 'Sob', 'Niedz')
+        self.calendar ={'1':('January',l_mouth), '2':['February',range(1,30)], '3':('March',l_mouth), '4':('April',s_mouth), '5':('May',l_mouth), 
+                        '6':('June',s_mouth), '7':('July',l_mouth), '8':('August',l_mouth), '9':('September',s_mouth), '10':('October',l_mouth),
+                        '11':('November',s_mouth), '12':('December',l_mouth)}
+        self.week = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 
         self.window = Tk()
         self.window.title("Calendar")
+        self.dt = date.today()
+        self.months = self.calendar[str(self.dt.month)]
+        self.month_n = self.dt.month
         self.dt = date.today()
         self.months = self.calendar[str(self.dt.month)]
         self.month_n = self.dt.month
@@ -40,20 +43,32 @@ class Calendar():
             week_e = Label(self.window, text=w_day, width=15, height=2, justify='center')
             week_e.grid(row=2, column=i)
             i += 1
-
+        self.leap_year
         self.render_days()
 
+    def leap_year(self):
+        if (self.yr % 4) == 0:
+           if (self.yr % 100) == 0:
+               if (self.yr % 400) == 0:
+                    (self.calendar['2'])[1] = range(1,30)
+               else:
+                   (self.calendar['2'])[1] = range(1,29)
+           else:
+               (self.calendar['2'])[1] = range(1,30)
+        else:
+           (self.calendar['2'])[1] = range(1,29)
 
     def change_year(self, k):
         self.yr += k
         self.year.config(text=self.yr)
+        self.leap_year()
         self.render_days()
 
     def change_month(self, k):
         self.month_n += k
         if self.month_n < 1:
             self.month_n = 12
-        if self.month_n > 12:
+        elif self.month_n > 12:
             self.month_n = 1
         self.months = self.calendar[str(self.month_n)]
         self.l_month.config(text=self.months[0])
