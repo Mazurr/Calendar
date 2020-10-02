@@ -9,6 +9,3 @@ def create_connection(db_file):
         conn.close()
         return 0
     return conn
-
-def close_connection(conn):
-    conn.close()

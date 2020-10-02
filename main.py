@@ -6,4 +6,4 @@ if __name__ == '__main__':
     if conn:
         app = cl.Calendar()
         app.window.mainloop()
-    cl_db.close_connection(conn)
+    conn.close()
