@@ -1,0 +1,48 @@
+<CalendarView>:
+    week_grid: week_grid
+    days_grid: days_grid
+    year_label: year_label
+    month_label: month_label
+    GridLayout:
+        cols: 1
+        size: root.width, root.height
+        row_default_height: 30
+        #row_force_default: True
+        GridLayout:
+            size_hint_y: None
+            height: 60
+            row_default_height: 30
+            row_force_default: True
+            cols: 3
+            rows: 2
+            Button:
+                text: "<" 
+                on_press: root.change_year("<")
+            Label:
+                id: year_label
+                text: root.year_l
+                bold: True
+            Button:
+                text: ">"
+                on_press: root.change_year(">")
+            Button:
+                text: "<" 
+                on_press: root.change_month("<")
+            Label:
+                id: month_label
+                text: root.month_l
+                bold: True
+            Button:
+                text: ">"
+                on_press: root.change_month(">")
+        GridLayout:
+            size_hint_y: None
+            height: 40
+            id: week_grid
+            row_force_default: True
+            row_default_height: 30
+            cols: 7
+        GridLayout:
+            id: days_grid
+            row_default_height: 60
+            cols: 7
