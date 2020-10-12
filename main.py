@@ -1,46 +1,43 @@
+from kivy.app import App
+from kivy.uix.screenmanager import ScreenManager
+
 from datetime import date
-from views import CalendarView, AddEventsView, EventsListView
-from tkinter import Tk, Frame
-import calendar_db as cl_db
+
+from views import CalendarView, AddEventView, EventListView
+from calendar_db import create_connection
 
 
-class Views(Tk):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, *kwargs)
-        self.current_view = None
+class ViewManager(ScreenManager):
+    day, month, year, event = 0, 0, 0, None
+
+    def __init__(self, conn):
+        super(ViewManager, self).__init__()
         dt = date.today()
-        day = dt.day
-        month = dt.month
-        year = dt.year
-        self.conn = kwargs["conn"]
-        self.view = {}
-        self.view["calendar_view"] = CalendarView
-        self.view["add_event_view"] = AddEventsView
-        self.view["events_list_view"] = EventsListView
+        self.conn = conn
+        self.day = dt.day
+        self.month = dt.month
+        self.year = dt.year
+        self.add_widget(CalendarView(day=self.day, month=self.month, year=self.year))
+        self.add_widget(AddEventView(conn=self.conn))
+        self.add_widget(EventListView(conn=self.conn))
+        self.change_screen(name="calendar")
+        del dt
 
-        self.show_view("calendar_view", day=day, month=month, year=year)
-        del day, month, year
+    def change_screen(self, name, **kwargs):
+        self.current = name
 
-    def show_view(self, page_name, **kwargs):
-        """Show a view for the given view name"""
-        new_view = self.view[page_name](
-            self,
-            day=kwargs["day"],
-            month=kwargs["month"],
-            year=kwargs["year"],
-            conn=self.conn,
-        )
 
-        if self.current_view is not None:
-            self.current_view.destroy()
+class CalendarApp(App):
+    def __init__(self, conn):
+        super().__init__()
+        self.conn = conn
 
-        self.current_view = new_view
-        self.current_view.pack()
+    def build(self):
+        return ViewManager(conn=self.conn)
 
 
 if __name__ == "__main__":
-    conn = cl_db.create_connection("cal.db")
+    conn = create_connection("cal.db")
     if conn:
-        app = Views(conn=conn)
-        app.mainloop()
+        CalendarApp(conn=conn).run()
     conn.close()

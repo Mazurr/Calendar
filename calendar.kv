@@ -1,0 +1,134 @@
+<CalendarView>:
+    id: calendar
+    name: 'calendar'
+    week_grid: week_grid
+    days_grid: days_grid
+    year_label: year_label
+    month_label: month_label
+    GridLayout:
+        cols: 1
+        size: root.width, root.height
+        row_default_height: 30
+        GridLayout:
+            size_hint_y: None
+            height: 60
+            row_default_height: 30
+            row_force_default: True
+            cols: 3
+            rows: 2
+            Button:
+                text: "<" 
+                on_press: root.change_year(-1)
+            Label:
+                id: year_label
+                text: "0"
+                bold: True
+            Button:
+                text: ">"
+                on_press: root.change_year(1)
+            Button:
+                text: "<" 
+                on_press: root.change_month(-1)
+            Label:
+                id: month_label
+                text: "0"
+                bold: True
+            Button:
+                text: ">"
+                on_press: root.change_month(1)
+        GridLayout:
+            size_hint_y: None
+            height: 40
+            id: week_grid
+            row_force_default: True
+            row_default_height: 30
+            cols: 7
+        GridLayout:
+            id: days_grid
+            row_default_height: 60
+            cols: 7
+
+<AddEventView>:
+    id: add_event
+    name: 'add_event'
+    year_label: year_label
+    month_label: month_label
+    title: title
+    description: description
+    GridLayout:
+        cols: 1
+        size: root.width, root.height
+        GridLayout:
+            cols: 1
+            size_hint_y: None
+            height: 150
+            row_default_height: 30
+            row_force_default: True
+            Label:
+                id: year_label
+                text: "2020"
+            Label:
+                id: month_label
+                text: "2020"
+            Label:
+                text: "Title"
+            TextInput:
+                id: title
+                multiline: False
+            Label:
+                text: "Description"
+        GridLayout:
+            cols: 1
+            TextInput:
+                id: description
+        GridLayout:
+            cols: 1
+            size_hint_y: None
+            height: 60
+            row_default_height: 30
+            row_force_default: True
+            Button:
+                text: "Save"
+                on_press: root.save_event()
+            Button:
+                text: "Cancel"
+                on_press: root.go_back()
+
+<EventListView>:
+    id: event_list
+    name: 'event_list'
+    year_label: year_label
+    month_label: month_label
+    event_list_grid: event_list_grid
+    GridLayout:
+        cols: 1
+        size: root.width, root.height
+        GridLayout:
+            cols: 1
+            size_hint_y: None
+            height: 60
+            row_default_height: 30
+            row_force_default: True
+            Label:
+                id: year_label
+                text: "2020"
+            Label:
+                id: month_label
+                text: "October"
+        GridLayout:
+            id: event_list_grid
+            cols:1
+            row_default_height: 30
+            row_force_default: True
+        GridLayout:
+            cols: 1
+            size_hint_y: None
+            height: 60
+            row_default_height: 30
+            row_force_default: True      
+            Button:
+                text: "Add"
+                on_press: root.add_event()
+            Button:
+                text: "Cancel"
+                on_press: root.go_back()
