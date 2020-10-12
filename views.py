@@ -1,6 +1,8 @@
 from datetime import date, datetime
 
 from kivy.uix.button import Button
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.screenmanager import Screen
@@ -62,7 +64,7 @@ class CalendarView(Screen):
                 Button(
                     text=str(m_day),
                     background_color=(today if m_day == self.dt.day else [1, 1, 1, 1]),
-                    on_press=lambda d=m_day: self.add_event(d),
+                    on_press=self.add_event,
                 )
             )
             c += 1
@@ -77,19 +79,13 @@ class CalendarView(Screen):
         return self.dt.replace(self.year, month=self.month_n, day=1).weekday()
 
     def change_year(self, k):
-        if k == "<":
-            self.year -= 1
-        else:
-            self.year += 1
+        self.year += k
         self.year_label.text = str(self.year)
         self.leap_year()
         self.render_days()
 
     def change_month(self, k):
-        if k == "<":
-            self.month_n -= 1
-        else:
-            self.month_n += 1
+        self.month_n += k
         if self.month_n < 1:
             self.month_n = 12
         elif self.month_n > 12:
@@ -118,12 +114,14 @@ class CalendarView(Screen):
 
 
 class EventListView(Screen):
+    id_e, popup = None, None
     def __init__(self, conn, **kwargs):
         super(EventListView, self).__init__()
         self.conn = conn
         self.year = 2019
         self.month = 20
         self.day = 2
+        self.button_list = {}
 
     def on_pre_enter(self):
         self.year = self.parent.year
@@ -141,6 +139,7 @@ class EventListView(Screen):
 
     def list_event(self):
         self.event_list_grid.clear_widgets()
+        self.button_list = {}
         data = self.events_query()
         for row in data:
             self.event_list_grid.add_widget(Label(text=str(row)))
@@ -151,21 +150,45 @@ class EventListView(Screen):
                 row_default_height=30,
                 row_force_default=True,
             )
-            child_grid.add_widget(Button(text="Edit"))
-            child_grid.add_widget(
-                Button(text="Delete", on_press=lambda id=row[0]: self.delete_event(id))
-            )
+            temp = Button(text="Edit", on_press=self.edit_event)
+            self.button_list[temp] = row[0]
+            child_grid.add_widget(temp)
+            temp = Button(text="Delete", on_release=self.delete_confirm)
+            self.button_list[temp] = (row[0], row[1])
+            child_grid.add_widget(temp)
             self.event_list_grid.add_widget(child_grid)
+    
+    def delete_confirm(self, btn):
+        event = self.button_list[btn]
+        self.id_e = event[0]
+        box = GridLayout(cols=1, padding = (10))
+        box.add_widget(Label(text = 'Delete event '+event[1]+"?"))
+        btn1 = Button(text = "DELETE", on_release = self.delete_event)
+        btn2 = Button(text = "CANCEL")
+        box.add_widget(btn1)
+        box.add_widget(btn2)
+        popup = Popup(
+            title="Confirm Delete!",
+            content=box,
+            size_hint=(None, None), 
+            size=(400, 400,),
+            auto_dismiss = True
+        )
+        self.popup = popup
+        btn2.bind(on_press = popup.dismiss)
+        popup.open()
 
-    def delete_event(self, id):
+
+    def delete_event(self, *args):
+        for a in args:
+            print(args)
+        self.popup.dismiss()
         c = self.conn.cursor()
-        print(id.on_press)
-        """
-        query = "DELETE FROM Events WHERE Events.id == {} ".format(id)
+        query = "DELETE FROM Events WHERE Events.id == {} ".format(self.id_e)
+        self.id_e = None
         c.execute(query)
         self.conn.commit()
-        """
-        self.parent.change_screen("event_list")
+        self.on_pre_enter()
 
     def events_query(self):
         c = self.conn.cursor()
@@ -175,7 +198,10 @@ class EventListView(Screen):
         c.execute(query)
         rows = c.fetchall()
         return rows
-
+    
+    def edit_event(self, btn):
+        self.parent.event = self.button_list[btn]
+        self.parent.change_screen("add_event")
 
 class AddEventView(Screen):
     def __init__(self, conn, **kwargs):
@@ -184,6 +210,7 @@ class AddEventView(Screen):
         self.year = 2019
         self.month = 20
         self.day = 2
+        self.event = None
 
     def on_pre_enter(self):
         self.year = self.parent.year
@@ -191,6 +218,12 @@ class AddEventView(Screen):
         self.day = self.parent.day
         self.year_label.text = str(self.year)
         self.month_label.text = (calendar[str(self.month)])[0]
+        self.title.text = ""
+        self.description.text = ""
+        self.event = self.parent.event
+        if self.event is not None:
+            self.load_event()
+
 
     def go_back(self):
         self.parent.change_screen("event_list")
@@ -198,12 +231,28 @@ class AddEventView(Screen):
     def save_event(self):
         title = self.title.text
         descript = self.description.text
-        query = """ INSERT INTO Events(title, descript, date)
-              VALUES('{}', '{}', {:02}-{:02}-{:02}) """.format(
-            title, descript, self.day, self.month, self.year
-        )
-        print(query)
+        if self.event is None:
+            query = """ INSERT INTO Events(title, descript, date)
+                  VALUES('{}', '{}', {:02}-{:02}-{:02}) """.format(
+                title, descript, self.day, self.month, self.year
+            )
+        else:
+            query = """UPDATE Events
+                    SET title = '{}', descript = '{}'
+                    WHERE Events.id == {}""".format(title, descript, self.event)
+            self.parent.event = None
         c = self.conn.cursor()
         c.execute(query)
         self.conn.commit()
         self.go_back()
+
+    def load_event(self):
+        c = self.conn.cursor()
+        query = "SELECT * FROM Events WHERE Events.id == {} ".format(self.event)
+        c.execute(query)
+        rows = c.fetchall()
+        self.title.text = rows[0][1]
+        self.description.text = rows[0][2]
+
+class Mybutton(ButtonBehavior):
+    pass

@@ -8,7 +8,7 @@ from calendar_db import create_connection
 
 
 class ViewManager(ScreenManager):
-    day, month, year = 0, 0, 0
+    day, month, year, event = 0, 0, 0, None
 
     def __init__(self, conn):
         super(ViewManager, self).__init__()

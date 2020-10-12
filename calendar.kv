@@ -18,24 +18,24 @@
             rows: 2
             Button:
                 text: "<" 
-                on_press: root.change_year("<")
+                on_press: root.change_year(-1)
             Label:
                 id: year_label
                 text: "0"
                 bold: True
             Button:
                 text: ">"
-                on_press: root.change_year(">")
+                on_press: root.change_year(1)
             Button:
                 text: "<" 
-                on_press: root.change_month("<")
+                on_press: root.change_month(-1)
             Label:
                 id: month_label
                 text: "0"
                 bold: True
             Button:
                 text: ">"
-                on_press: root.change_month(">")
+                on_press: root.change_month(1)
         GridLayout:
             size_hint_y: None
             height: 40
